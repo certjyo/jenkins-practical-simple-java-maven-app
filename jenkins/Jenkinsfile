@@ -1,30 +1,69 @@
 pipeline {
     agent {
-    docker { image 'node:16-alpine' }
-  }
+        // Use a Docker image that includes Maven and Java if you're building a Java project.
+        // 'node:16-alpine' is for Node.js, not Java/Maven.
+        // Example for Maven/Java: 'maven:3.9.6-eclipse-temurin-17-alpine' or 'jenkins/maven:3.8.1-jdk11'
+        // For this correction, assuming a Java/Maven project based on the 'mvn' commands.
+        docker { image 'maven:3.9.6-eclipse-temurin-17-alpine' }
+    }
     options {
         skipStagesAfterUnstable()
+        // Add a timeout for the entire pipeline to prevent runaway builds
+        timeout(time: 1, unit: 'HOURS') 
     }
     stages {
         stage('Build') {
             steps {
-                sh 'mvn -B -DskipTests clean package'
+                // Ensure the 'sh' step explicitly runs inside the Docker container
+                script {
+                    sh 'mvn -B -DskipTests clean package'
+                }
             }
         }
         stage('Test') {
             steps {
-                sh 'mvn test'
+                script {
+                    sh 'mvn test'
+                }
             }
             post {
                 always {
+                    // Make sure the path to junit reports is correct for your project
                     junit 'target/surefire-reports/*.xml'
+                }
+                // Add a 'failure' block to clean up or provide more info on test failures
+                failure {
+                    echo 'Tests failed! Check logs for details.'
                 }
             }
         }
         stage('Deliver') { 
             steps {
-                sh './jenkins/scripts/deliver.sh' 
+                // Ensure the script has executable permissions and the path is correct
+                script {
+                    sh './jenkins/scripts/deliver.sh' 
+                }
             }
+        }
+    }
+    // Add a post-build action for overall success/failure
+    post {
+        success {
+            echo 'Pipeline finished successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+        unstable {
+            echo 'Pipeline finished with unstable results (e.g., some tests passed, some failed).'
+        }
+        aborted {
+            echo 'Pipeline was aborted.'
+        }
+        always {
+            echo 'This will always run, regardless of the pipeline outcome.'
+            // You might add cleanup steps here, e.g.,
+            // cleanWs() // Cleans the workspace
         }
     }
 }
