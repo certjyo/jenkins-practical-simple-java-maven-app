@@ -5,6 +5,7 @@ pipeline {
         // Example for Maven/Java: 'maven:3.9.6-eclipse-temurin-17-alpine' or 'jenkins/maven:3.8.1-jdk11'
         // For this correction, assuming a Java/Maven project based on the 'mvn' commands.
         docker { image 'maven:3.9.9-eclipse-temurin-21-alpine' }
+        args "-v ${HOME}/.m2:/root/.m2" 
     }
     options {
         skipStagesAfterUnstable()
