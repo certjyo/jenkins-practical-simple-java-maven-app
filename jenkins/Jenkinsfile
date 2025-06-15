@@ -12,14 +12,6 @@ pipeline {
         timeout(time: 1, unit: 'HOURS') 
     }
     stages {
-        stage('Build') {
-            steps {
-                // Ensure the 'sh' step explicitly runs inside the Docker container
-                script {
-                    sh 'mvn -B -DskipTests clean package'
-                }
-            }
-        }
         stage('Debug Maven Path') {
     steps {
         script {
@@ -30,6 +22,15 @@ pipeline {
         }
     }
 }
+        stage('Build') {
+            steps {
+                // Ensure the 'sh' step explicitly runs inside the Docker container
+                script {
+                    sh 'mvn -B -DskipTests clean package'
+                }
+            }
+        }
+        
         stage('Test') {
             steps {
                 script {
