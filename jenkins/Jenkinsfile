@@ -20,6 +20,16 @@ pipeline {
                 }
             }
         }
+        stage('Debug Maven Path') {
+    steps {
+        script {
+            sh 'pwd' // Show current working directory
+            sh 'echo $HOME' // Show the home directory reported by the shell
+            sh 'ls -ld $HOME/.m2' // Check permissions of .m2 in home
+            sh 'mvn help:effective-settings' // Show the effective settings Maven is using
+        }
+    }
+}
         stage('Test') {
             steps {
                 script {
